@@ -26,6 +26,10 @@ async function createPlaylist(access_token, refresh_token, userID, artistName) {
 		// Search artist info
 		const artistsSearched = await spotifyApi.searchArtists(artistName);
 
+		if (artistsSearched.body.artists.items[0] === undefined) {
+			console.log('	Oops! O nome deste artista não existe!')
+			return;
+		}
 		// Get artist URI
 		const artistURI = artistsSearched.body.artists.items[0].uri.slice(15);
 

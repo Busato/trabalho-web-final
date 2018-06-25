@@ -16,6 +16,20 @@
       #playlist {
         padding: 50px;
       }
+      #artistName {
+        height: 40px;
+        width: 300px;
+        border-radius: 5px;
+        margin: 20px;
+        border-color: #aaaaaa;
+      }
+      #artist-search {
+        height: 40px;
+        border-radius: 3px;
+        background-color: transparent;
+        color: #191414;
+      }
+
     </style>
   </head>
 
@@ -67,7 +81,7 @@
     <div id="playlist" class="col-lg-4 col-lg-offset-4">
       <h2>Insira o nome de um artista e crie um playlist com bandas parecidas</h2>
           <input id ="artistName" type="text" name="fname" placeholder="Nome artista">
-          <button id="artist-search" type="button" action="/artist-search">Clique aqui</button>
+          <button id="artist-search" type="button" action="/artist-search">Buscar</button>
     </div>
 
     <script src="//cdnjs.cloudflare.com/ajax/libs/handlebars.js/2.0.0-alpha.1/handlebars.min.js"></script>
@@ -115,14 +129,14 @@
                   userProfilePlaceholder.innerHTML = userProfileTemplate(response);
                   $('#login').hide();
                   $('#loggedin').show();
-                  var $yourUl = $("#playlist"); 
-                  $yourUl.css("display", $yourUl.css("display") === 'none' ? '' : 'none');
+                  $('#playlist').css('display','block');
                 }
             });
           } else {
               // render initial screen
               $('#login').show();
               $('#loggedin').hide();
+              
           }
           document.getElementById('obtain-new-token').addEventListener('click', function() {
             $.ajax({
