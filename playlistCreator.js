@@ -1,41 +1,33 @@
- // test key = BQB2WUiRBw45E6gQ_gX0V3ccoTzMpWnjeIr0z7pz_ihADOWM6aqyvSuO7B8IZNlhM0gErVpv4jG__XRwUuL5NUw_mwYGFQiJdJCI7X1eKrdgrT9mrX_cdmt4OG2Yir8GO7B7g593RA5Dwf6hHDgKVWgX204tGPqI46snS0QoX31MKlU
-var requirejs = require('requirejs');
- 
-const SpotifyWebApi = require('spotify-web-api-node');
+var SpotifyWebApi = require('spotify-web-api-node');
 
-const Conf = require('conf');
-const pkg = require('./package.json');
-  
-async function createPlaylist() {
+async function createPlaylist(access_token, refresh_token, userID, artistName) {
 
-	const artistName = document.getElementById("artist-name").value;
-
-        if (artistName === undefined){
-            console.log('	Oops! Lembre de adicionar o nome de um artista!')
-            process.exit;
+    if (artistName === undefined){
+      console.log('	Oops! Lembre de adicionar o nome de um artista!')
+      return;
 		}
 
 		// name of the playlist, optional parameter
-		var playlistName = "Trabalho web playlist: "+artistName;
-
+		var playlistName = "Trabalho web playlist: "+ artistName;
 		var allTracks = [];
 		var artists = [];
 
-		const spotifyApi = new SpotifyWebApi();
+		//credentials are optional
+		var spotifyApi = new SpotifyWebApi({
+			clientId: '1d25415827b549e882f3866440a1b25b',
+			clientSecret: '1bf119b6a01d4ffe9b06ea9c1aa4b5ca',
+			redirectUri: 'http://localhost:8888/callback/'
+		});
 
-		// get artist URI
-		const artistSearch = await spotifyApi.searchArtists(artistName);
+		// Set access and refresh token for request
+		spotifyApi.setAccessToken(access_token);
+		spotifyApi.setRefreshToken(refresh_token);
 
-		console.log(artistSearch);
-		// error check for invalid search
-		
-		if (artistSearch.body.artists.items[0] === undefined) {
-			config.clear();
-			console.log('Oops! That search didnt work. Try again please!');
-			return;
-		}
-		let artistURI = artistSearch.body.artists.items[0].uri;
-		artistURI = artistURI.slice(15);
+		// Search artist info
+		const artistsSearched = await spotifyApi.searchArtists(artistName);
+
+		// Get artist URI
+		const artistURI = artistsSearched.body.artists.items[0].uri.slice(15);
 
 		// get artist top tracks
 		let artistTopTracks = await spotifyApi.getArtistTopTracks(artistURI, 'CA');
@@ -56,64 +48,24 @@ async function createPlaylist() {
 
 		for (let i = 0; i < Math.min(artists.length, 2); i++) {
 		  let artist = await spotifyApi.getArtistTopTracks(artists[i], 'CA');
-		  
 		  if (!artist || !artist.body || !artist.body.tracks)
 		    continue
-
 		  let { tracks } = artist.body;
-		  
 		  for (let j = 0; j < Math.min(tracks.length, 3); j++) {
 		    if (tracks[j] && tracks[j].uri)
 		      allTracks.push(tracks[j].uri)
 		  }
 		}
 
+	// Create a private playlist
+	const playlistCreated = await spotifyApi.createPlaylist(userID, playlistName, { 'public' : false })
+	
+	const playlistID = playlistCreated.body.id;
 
-		// create an empty public playlist
-		var options = {
-		  json: true, 
-		  headers: {
-		    'Content-type': 'application/json',
-		    'Authorization' : `Bearer ${config.get('bearer')}`,
-		    'Accept' : 'application/json'
-		  },
-		  body: JSON.stringify({ name: `${playlistName}`, public : true})
-		};
+	// Add tracks to a playlist
+	const responsePlaylist = await spotifyApi.addTracksToPlaylist(userID , playlistID, allTracks);
 
-		got.post(`https://api.spotify.com/v1/users/${config.get('username')}/playlists`, options)
-		  .then(response => {
-		    const playlistID = response.body.id;
-
-				// function to add tracks to playlist
-				function populatePlaylist (id, uris) {
-					var url = `https://api.spotify.com/v1/users/${config.get('username')}/playlists/${id}/tracks?uris=${uris}`
-					var options = {
-					  json: true, 
-					  headers: {
-					    'Content-type': 'application/json',
-					    'Authorization' : `Bearer ${config.get('bearer')}`,
-					  }
-					};
-					got.post(url, options)
-					  .then(response => {
-					  	spinner.succeed('Success!');
-					    console.log('Your playlist is ready! 	Its called "${playlistName}"');
-					  })
-					  .catch(err => { 
-					  	spinner.fail('Failed');
-					  	// don't need to reset config since credentials are correct at this point
-					  	console.log('There was an error adding songs to the playlist. 	However, a playlist was created. 	Please try a different search.'); 
-					  });
-				}
-
-				populatePlaylist(playlistID, allTracks);
-
-		  })
-
-		  .catch(async err => { 
-		  	spinner.fail('Failed');
-		  	config.clear();
-		  	console.log('ERROR: Incorrect username or bearer token	You might need to update your bearer token Generate a new one at https://developer.spotify.com/web-api/console/post-playlists/ 	Try again!');
-		});
-			
+	return responsePlaylist.statusCode;
 }
+
+module.exports.createPlaylist = createPlaylist;

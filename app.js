@@ -4,6 +4,7 @@ var cors = require('cors');
 var querystring = require('querystring');
 var cookieParser = require('cookie-parser');
 
+var playlistCreator = require('./playlistCreator.js');
 var client_id = '1d25415827b549e882f3866440a1b25b'; // Your client id
 var client_secret = '1bf119b6a01d4ffe9b06ea9c1aa4b5ca'; // Your secret
 var redirect_uri = 'http://localhost:8888/callback/'; // Your redirect uri
@@ -37,7 +38,7 @@ app.get('/login', function(req, res) {
   res.cookie(stateKey, state);
 
   // your application requests authorization
-  var scope = 'user-read-private user-read-email';
+  var scope = 'playlist-modify-private user-read-private user-read-email';
   res.redirect('https://accounts.spotify.com/authorize?' +
     querystring.stringify({
       response_type: 'code',
@@ -132,6 +133,16 @@ app.get('/refresh_token', function(req, res) {
       });
     }
   });
+});
+
+app.get('/artist-search', function(req, res) {
+   const response = playlistCreator.createPlaylist(req.query.access_token, req.query.refresh_token,
+    req.query.userID, req.query.artistName)
+    .then(function(data) {
+      res.sendStatus(200);
+    }, function(err) {
+      console.error(err);
+    });
 });
 
 console.log('Listening on 8888');

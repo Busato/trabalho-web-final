@@ -4,7 +4,7 @@
     <title>Trabalho de Web</title>
     <link rel="stylesheet" href="//netdna.bootstrapcdn.com/bootstrap/3.1.1/css/bootstrap.min.css">
     <style type="text/css">
-      #login, #loggedin {
+      #login, #loggedin, #playlist {
         display: none;
       }
       .text-overflow {
@@ -12,6 +12,9 @@
         text-overflow: ellipsis;
         white-space: nowrap;
         width: 500px;
+      }
+      #playlist {
+        padding: 50px;
       }
     </style>
   </head>
@@ -42,7 +45,7 @@
         <div class="media-body">
           <dl class="dl-horizontal">
             <dt>Nome de usuário</dt><dd class="clearfix">{{display_name}}</dd>
-            <dt>Id</dt><dd>{{id}}</dd>
+            <dt>Id</dt><dd id="userId">{{id}}</dd>
             <dt>Email</dt><dd>{{email}}</dd>
             <dt>Spotify URI</dt><dd><a href="{{external_urls.spotify}}">{{external_urls.spotify}}</a></dd>
             <dt>Link</dt><dd><a href="{{href}}">{{href}}</a></dd>
@@ -60,6 +63,12 @@
         <dt>Refresh token</dt><dd class="text-overflow">{{refresh_token}}</dd>
       </dl>
     </script>
+
+    <div id="playlist" class="col-lg-4 col-lg-offset-4">
+      <h2>Insira o nome de um artista e crie um playlist com bandas parecidas</h2>
+          <input id ="artistName" type="text" name="fname" placeholder="Nome artista">
+          <button id="artist-search" type="button" action="/artist-search">Clique aqui</button>
+    </div>
 
     <script src="//cdnjs.cloudflare.com/ajax/libs/handlebars.js/2.0.0-alpha.1/handlebars.min.js"></script>
     <script src="http://code.jquery.com/jquery-1.10.1.min.js"></script>
@@ -106,6 +115,8 @@
                   userProfilePlaceholder.innerHTML = userProfileTemplate(response);
                   $('#login').hide();
                   $('#loggedin').show();
+                  var $yourUl = $("#playlist"); 
+                  $yourUl.css("display", $yourUl.css("display") === 'none' ? '' : 'none');
                 }
             });
           } else {
@@ -127,7 +138,24 @@
               });
             });
           }, false);
-        }
+
+          document.getElementById('artist-search').addEventListener('click', function() {
+            var artistName = document.getElementById("artistName").value;
+            var userID = document.getElementById("userId").innerHTML;
+            $.ajax({
+              url: '/artist-search',
+              data: {
+                'access_token': access_token,
+                'refresh_token': refresh_token,
+                'userID': userID,
+                'artistName': artistName
+              }
+            }).done(function(data) {
+              // Data sent OK
+              console.log('funfo');
+            });
+          }, false);
+            }
       })();
     </script>
   </body>
