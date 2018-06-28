@@ -140,6 +140,7 @@ app.get('/artist-search', function(req, res) {
     req.query.userID, req.query.artistName)
     .then(function(data) {
       res.sendStatus(200);
+      alert("Search welldone.");
     }, function(err) {
       console.error(err);
     });
