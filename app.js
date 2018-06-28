@@ -136,11 +136,14 @@ app.get('/refresh_token', function(req, res) {
 });
 
 app.get('/artist-search', function(req, res) {
-   const response = playlistCreator.createPlaylist(req.query.access_token, req.query.refresh_token,
+   playlistCreator.createPlaylist(req.query.access_token, req.query.refresh_token,
     req.query.userID, req.query.artistName)
     .then(function(data) {
-      res.sendStatus(200);
-      alert("Search welldone.");
+      if(data == 201) {
+        res.sendStatus(200);
+      } else {
+        res.sendStatus(404);
+      } 
     }, function(err) {
       console.error(err);
     });

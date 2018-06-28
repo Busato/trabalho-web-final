@@ -3,8 +3,8 @@ var SpotifyWebApi = require('spotify-web-api-node');
 async function createPlaylist(access_token, refresh_token, userID, artistName) {
 
     if (artistName === undefined){
-      console.log('	Oops! Lembre de adicionar o nome de um artista!')
-      return;
+		console.log('	Oops! Lembre de adicionar o nome de um artista!')
+		return;
 		}
 
 		// name of the playlist, optional parameter
@@ -25,7 +25,6 @@ async function createPlaylist(access_token, refresh_token, userID, artistName) {
 
 		// Search artist info
 		const artistsSearched = await spotifyApi.searchArtists(artistName);
-
 		if (artistsSearched.body.artists.items[0] === undefined) {
 			console.log('Oops! O nome deste artista não existe!')
 			return;

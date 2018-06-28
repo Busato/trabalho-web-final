@@ -9,7 +9,7 @@
             background-color: #eaeaea;
         }
 
-        #login, #loggedin, #playlist {
+        #login, #loggedin, #playlist, #playlist-created, #error {
             display: none;
         }
 
@@ -135,6 +135,9 @@
     <button id="artist-search" type="button" action="/artist-search">Buscar</button>
 </div>
 
+<div id="playlist-created">
+    <h2>Entre na sua conta do Spotify para verificar a Playlist Criada!</h2>
+</div>
 </div>
 
 <script src="//cdnjs.cloudflare.com/ajax/libs/handlebars.js/2.0.0-alpha.1/handlebars.min.js"></script>
@@ -210,6 +213,10 @@
             document.getElementById('artist-search').addEventListener('click', function () {
                 var artistName = document.getElementById("artistName").value;
                 var userID = document.getElementById("userId").innerHTML;
+                if(artistName == '') {
+                    alert('Insira o nome de um artista!');
+                    return;
+                }
                 $.ajax({
                     url: '/artist-search',
                     data: {
@@ -217,10 +224,15 @@
                         'refresh_token': refresh_token,
                         'userID': userID,
                         'artistName': artistName
+                    },
+                    success: function (data) {
+                        $('#playlist').css('display', 'none');
+                        $('#playlist-created').css('display', 'block');
+                    },
+                    error: function (ajaxContext) {
+                        alert('Esse artista não existe! Insira uma informação válida!');
                     }
-                }).done(function (data) {
-
-                });
+                })
             }, false);
         }
     })();
